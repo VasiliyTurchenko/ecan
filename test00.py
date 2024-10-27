@@ -19,22 +19,23 @@ def main():
     ecan.connect()
 
     ecan.open_channel(1, "250")
-    ecan.open_channel(2, "250")
+#    ecan.open_channel(2, "250")
 
 # channel2 sends to ch1
 
-    ecan.channel2.add_filter(CAN_Packet_Filter(msg_id=0xe0, cb=dumper))
-    ecan.channel1.add_filter(CAN_Packet_Filter(msg_id=0xe0, cb=dumper_green))
+#    ecan.channel2.add_filter(CAN_Packet_Filter(msg_id=0xe0, cb=dumper))
+
+    ecan.channel1.add_filter(CAN_Packet_Filter(msg_id=0x150, cb=dumper_green))
 
     msg_0xe0 = CAN_Message_Composer(ecan.channel2, msg_id=0xe0, ext = False)
     
     print(f"channel 1 num. of filters: {len(ecan.channel1.filters)}")
     print(f"channel 2 num. of filters: {len(ecan.channel2.filters)}")
 
-    print (msg_0xe0.send_message(b'\x5A\x5B\x5C\x5D\x5E\x5F\x60\x61'))
+    #print (msg_0xe0.send_message(b'\x5A\x5B\x5C\x5D\x5E\x5F\x60\x61'))
 
     # dump non-channes stuff
-    timeout = time() + 1
+    timeout = time() + 10
     while (time() <= timeout):
 
 #        print (msg_0xe0.send_message(b'\x5A\x5B\x5C\x5D\x5E\x5F\x60\x62'))

@@ -47,8 +47,7 @@ def dumper(m):
 
 def dumper_green(m):
     """Just a dumper"""
-    print(Fore.GREEN + f"MSG ID:{hex(m[0])}  EXT:{m[1]}  DATA:{m[2].hex(sep=' ')}  TS:{hex(m[3])}")
-    print(Style.RESET_ALL)
+    print(Fore.GREEN + f"MSG ID:{hex(m[0])}  EXT:{m[1]}  DATA:{m[2].hex(sep=' ')}  TS:{hex(m[3])}" + Style.RESET_ALL)
     return
 
 
@@ -184,7 +183,7 @@ class Ecan:
     class EcanChannel:
         """Class representing an ECAN's channel"""
 
-        def __init__(self, nr: int, parent):
+        def __init__(self, nr: int, parent, msg_sink = None):
             self.parent = parent
             self.chNr = nr
             self.chOpen = False
@@ -194,6 +193,8 @@ class Ecan:
             self.send_ack = b'\xff\x05' + self.chNr.to_bytes(1, byteorder = 'little')
             self.last_send_ack = b''
             self.send_mutex = Lock()
+            
+            self.msg_sink = msg_sink if (msg_sink != None) else self.default_msg_sink
             
             self.ch1_status_msg = b"\xff\x03\x01"
             self.ch2_status_msg = b"\xff\x03\x02"
@@ -301,6 +302,11 @@ class Ecan:
             else:
                 self.parent.logger.error(f"Channel {self.chNr} IS NOT closed!")
 
+        def default_msg_sink(self, msg):
+            """ The default sink for all the unclaimed channel's messages"""
+            # self.parent.logger.debug(f"Channel {self.chNr}, message: {msg.hex(sep=' ')}")
+            return
+
         def add_filter(self, filter):
             """ adds filter to the filter chain"""
             not_found = True
@@ -401,7 +407,8 @@ class Ecan:
                     if not filter_done:
                         if (msg[1]) != 0x04:
                             self.parent.logger.debug(f"Channel {self.chNr} - message dropped: {msg.hex(sep=' ')}")
-                        pass
+                        else:
+                            self.msg_sink(msg)
                 else:
                     sleep(0)
                     
